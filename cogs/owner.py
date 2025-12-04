@@ -11,6 +11,7 @@ class OwnerCog(commands.Cog, name="Owner-Only Commands"):
     connections: BaseCommandHandler
     strands: BaseCommandHandler
     wordle: BaseCommandHandler
+    pips: BaseCommandHandler
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -18,6 +19,7 @@ class OwnerCog(commands.Cog, name="Owner-Only Commands"):
         self.connections = self.bot.connections
         self.strands = self.bot.strands
         self.wordle = self.bot.wordle
+        self.pips = self.bot.pips
 
     #####################
     #   COMMAND SETUP   #

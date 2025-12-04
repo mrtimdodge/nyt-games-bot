@@ -14,6 +14,8 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
     connections: BaseCommandHandler
     strands: BaseCommandHandler
     wordle: BaseCommandHandler
+    pips: BaseCommandHandler
+    
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -24,6 +26,7 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
         self.connections = self.bot.connections
         self.strands = self.bot.strands
         self.wordle = self.bot.wordle
+        self.pips = self.bot.pips
 
     #####################
     #   COMMAND SETUP   #
@@ -33,7 +36,7 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         try:
-            if message.author.id != self.bot.user.id and message.content.count("\n") >= 2:
+            if message.author.id != self.bot.user.id and message.content.count("\n") >= 1:
                 # parse non-puzzle lines from message
                 user_id = str(message.author.id)
                 first_line = message.content.splitlines()[0].strip()
@@ -54,6 +57,12 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
                 elif 'Strands' in first_line and self.utils.is_strands_submission(first_two_lines):
                     content = '\n'.join(message.content.splitlines()[2:])
                     if self.strands.add_entry(user_id, first_two_lines, content):
+                        await message.add_reaction('✅')
+                    else:
+                        await message.add_reaction('❌')
+                elif 'Pips' in first_line and self.utils.is_pips_submission(first_line):
+                    content = '\n'.join(message.content.splitlines()[1:])
+                    if self.pips.add_entry(user_id, first_line, content):
                         await message.add_reaction('✅')
                     else:
                         await message.add_reaction('❌')

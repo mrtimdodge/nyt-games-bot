@@ -14,6 +14,7 @@ class NYTGame(Enum):
     CONNECTIONS = auto()
     STRANDS = auto()
     WORDLE = auto()
+    PIPS = auto()
     UNKNOWN = auto()
 
 class BotUtilities():
@@ -34,6 +35,8 @@ class BotUtilities():
             return NYTGame.STRANDS
         elif 'wordle' in channel_name:
             return NYTGame.WORDLE
+        elif 'pips' in channel_name:
+            return NYTGame.PIPS
         else:
             return NYTGame.UNKNOWN
         
@@ -47,6 +50,8 @@ class BotUtilities():
             return NYTGame.STRANDS
         elif 'wordle' in message_content:
             return NYTGame.WORDLE
+        elif 'pips' in message_content:
+            return NYTGame.PIPS
         else:
             return NYTGame.UNKNOWN
 
@@ -81,6 +86,10 @@ class BotUtilities():
 
     def is_strands_submission(self, lines: str) -> str:
         return re.match(r'Strands #\d+', lines)
+    
+    def is_pips_submission(self, lines: str) -> str:
+        return re.match(r'Pips #\d+', lines)
+
 
     # DATES/TIMES
 

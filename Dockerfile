@@ -40,7 +40,13 @@ RUN pip install --upgrade pip setuptools wheel \
  && pip install -r /app/requirements.txt
 
 # Copy app
-COPY . /app
+COPY cogs /app/cogs
+COPY games /app/games
+COPY utils /app/utils
+COPY models /app/models
+COPY data /app/data
+COPY bot.py /app/bot.py
+
 RUN chown -R appuser:appuser /app
 
 USER appuser

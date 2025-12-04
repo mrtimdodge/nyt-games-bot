@@ -158,7 +158,7 @@ class StrandsCommandHandler(BaseCommandHandler):
         if len(missing_ids) == 0:
             await ctx.reply(f"All tracked players have submitted Puzzle #{puzzle_id}!")
         else:
-            await ctx.reply("The following players are missing Puzzle #{}: <@{}>".format(puzzle_id, '>, <@'.join(missing_ids)))
+            await ctx.reply("The following players are missing Puzzle #{}: <@{}>".format(puzzle_id, '>, <@'.join(map(str,missing_ids))))
 
     async def get_entries(self, ctx: commands.Context, *args: str) -> None:
         if len(args) == 0:

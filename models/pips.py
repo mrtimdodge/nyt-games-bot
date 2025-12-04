@@ -1,36 +1,51 @@
 import statistics as stats
 from data.base_data_handler import BaseDatabaseHandler
 from models.base_game import BasePlayerStats, BasePuzzleEntry
+import pandas as pd
 
-# class PipsPlayerStats(BasePlayerStats):
-#     # strands-specific stats
-#     avg_hints: float
-#     avg_spangram_index: float
-#     avg_rating_raw: float
-#     avg_rating_adj: float
+class PipsPlayerStats(BasePlayerStats):
+    # pips-specific stats
+    avg_easy_seconds: float
+    avg_medium_seconds: float
+    avg_hard_seconds: float
+    easy_cookie_rate:float
+    medium_cookie_rate:float
+    hard_cookie_rate:float
+    avg_total_seconds: float
 
-#     def __init__(self, user_id: str, puzzle_list: list[int], db: BaseDatabaseHandler) -> None:
-#         self.user_id = user_id
 
-#         player_puzzles = db.get_puzzles_by_player(self.user_id)
-#         player_entries: list[PipsPuzzleEntry] = db.get_entries_by_player(self.user_id, puzzle_list)
+    def __init__(self, user_id: str, puzzle_list: list[int], db: BaseDatabaseHandler) -> None:
+        self.user_id = user_id
 
-#         self.missed_games = len([p for p in puzzle_list if p not in player_puzzles])
+        player_puzzles = db.get_puzzles_by_player(self.user_id)
+        player_entries: list[PipsPuzzleEntry] = db.get_entries_by_player(self.user_id, puzzle_list)
 
-#         if len(player_entries) > 0:
-#             self.avg_hints = stats.mean([e.hints for e in player_entries])
-#             self.avg_spangram_index = stats.mean([e.spangram_index for e in player_entries if e.spangram_index > 0])
-#             self.avg_rating_raw = stats.mean([e.rating for e in player_entries])
-#             self.avg_rating_adj = stats.mean([e.rating for e in player_entries] + ([2.0] * self.missed_games))
-#         else:
-#             self.avg_hints = 0.0
-#             self.avg_spangram_index = 0.0
-#             self.avg_rating_raw = 0.0
-#             self.avg_rating_adj = 0.0
-#         self.rank = -1
+        self.missed_games = len([p for p in puzzle_list if p not in player_puzzles])
 
-#     def get_stat_list(self) -> tuple[float, float, float, float]:
-#         return self.avg_rating_raw, self.avg_rating_adj, self.avg_hints, self.avg_spangram_index
+        if len(player_entries) > 0:
+            self.avg_easy_seconds = stats.mean([e.easy_seconds for e in player_entries])
+            self.avg_medium_seconds = stats.mean([e.medium_seconds for e in player_entries])
+            self.avg_hard_seconds = stats.mean([e.hard_seconds for e in player_entries])
+
+            self.easy_cookie_rate = stats.mean([1.0 if e.easy_cookie else 0.0 for e in player_entries])
+            self.medium_cookie_rate = stats.mean([1.0 if e.medium_cookie else 0.0 for e in player_entries])
+            self.hard_cookie_rate = stats.mean([1.0 if e.hard_cookie else 0.0 for e in player_entries])
+
+            self.avg_total_seconds = stats.mean([e.easy_seconds + e.medium_seconds + e.hard_seconds for e in player_entries])
+        else:
+            self.avg_easy_seconds = 0.0
+            self.avg_medium_seconds = 0.0
+            self.avg_hard_seconds = 0.0
+
+            self.easy_cookie_rate = 0.0
+            self.medium_cookie_rate = 0.0
+            self.hard_cookie_rate = 0.0
+
+            self.avg_total_seconds = 0.0
+        self.rank = -1
+
+    def get_stat_list(self) -> tuple[float, float, float, float, float, float, float]:
+        return self.avg_easy_seconds, self.avg_medium_seconds, self.avg_hard_seconds, self.easy_cookie_rate, self.medium_cookie_rate, self.hard_cookie_rate, self.avg_total_seconds
 
 class PipsPuzzleEntry(BasePuzzleEntry):
     # pips-specific details

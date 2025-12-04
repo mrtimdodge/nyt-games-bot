@@ -84,21 +84,8 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
     @commands.command(name='ranks', help='Show ranks of players in the server')
     async def get_ranks(self, ctx: commands.Context, *args: str) -> None:
         try:
-            match self.utils.get_game_from_channel(ctx.message):
-                case NYTGame.CONNECTIONS:
-                    await self.connections.get_ranks(ctx, *args)
-                case NYTGame.STRANDS:
-                    await self.strands.get_ranks(ctx, *args)
-                case NYTGame.WORDLE:
-                    await self.wordle.get_ranks(ctx, *args)
-                case NYTGame.UNKNOWN:
-                    match self.utils.get_game_from_command(*args):
-                        case NYTGame.CONNECTIONS:
-                            await self.connections.get_ranks(ctx, *args[1:])
-                        case NYTGame.STRANDS:
-                            await self.strands.get_ranks(ctx, *args[1:])
-                        case NYTGame.WORDLE:
-                            await self.wordle.get_ranks(ctx, *args[1:])
+            [handler, handler_args] = self.get_command_handler_and_args(ctx, args)
+            await handler.get_ranks(ctx, *handler_args)
         except Exception as e:
             print(f"Caught exception: {e}")
             traceback.print_exception(e)
@@ -107,21 +94,8 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
     @commands.command(name='missing', help='Show all players missing an entry for a puzzle')
     async def get_missing(self, ctx: commands.Context, *args: str) -> None:
         try:
-            match self.utils.get_game_from_channel(ctx.message):
-                case NYTGame.CONNECTIONS:
-                    await self.connections.get_missing(ctx, *args)
-                case NYTGame.STRANDS:
-                    await self.strands.get_missing(ctx, *args)
-                case NYTGame.WORDLE:
-                    await self.wordle.get_missing(ctx, *args)
-                case NYTGame.UNKNOWN:
-                    match self.utils.get_game_from_command(*args):
-                        case NYTGame.CONNECTIONS:
-                            await self.connections.get_missing(ctx, *args[1:])
-                        case NYTGame.STRANDS:
-                            await self.strands.get_missing(ctx, *args[1:])
-                        case NYTGame.WORDLE:
-                            await self.wordle.get_missing(ctx, *args[1:])
+            [handler, handler_args] = self.get_command_handler_and_args(ctx, args)
+            await handler.get_missing(ctx, *handler_args)
         except Exception as e:
             print(f"Caught exception: {e}")
             traceback.print_exception(e)
@@ -130,21 +104,8 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
     @commands.command(name='entries', help='Show all recorded entries for a player')
     async def get_entries(self, ctx: commands.Context, *args: str) -> None:
         try:
-            match self.utils.get_game_from_channel(ctx.message):
-                case NYTGame.CONNECTIONS:
-                    await self.connections.get_entries(ctx, *args)
-                case NYTGame.STRANDS:
-                    await self.strands.get_entries(ctx, *args)
-                case NYTGame.WORDLE:
-                    await self.wordle.get_entries(ctx, *args)
-                case NYTGame.UNKNOWN:
-                    match self.utils.get_game_from_command(*args):
-                        case NYTGame.CONNECTIONS:
-                            await self.connections.get_entries(ctx, *args[1:])
-                        case NYTGame.STRANDS:
-                            await self.strands.get_entries(ctx, *args[1:])
-                        case NYTGame.WORDLE:
-                            await self.wordle.get_entries(ctx, *args[1:])
+            [handler, handler_args] = self.get_command_handler_and_args(ctx, args)
+            await handler.get_entries(ctx, *handler_args)
         except Exception as e:
             print(f"Caught exception: {e}")
             traceback.print_exception(e)
@@ -153,21 +114,8 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
     @commands.command(name="view", help="Show player's entry for a given puzzle number")
     async def get_entry(self, ctx: commands.Context, *args: str) -> None:
         try:
-            match self.utils.get_game_from_channel(ctx.message):
-                case NYTGame.CONNECTIONS:
-                    await self.connections.get_entry(ctx, *args)
-                case NYTGame.STRANDS:
-                    await self.strands.get_entry(ctx, *args)
-                case NYTGame.WORDLE:
-                    await self.wordle.get_entry(ctx, *args)
-                case NYTGame.UNKNOWN:
-                    match self.utils.get_game_from_command(*args):
-                        case NYTGame.CONNECTIONS:
-                            await self.connections.get_entry(ctx, *args[1:])
-                        case NYTGame.STRANDS:
-                            await self.strands.get_entry(ctx, *args[1:])
-                        case NYTGame.WORDLE:
-                            await self.wordle.get_entry(ctx, *args[1:])
+            [handler, handler_args] = self.get_command_handler_and_args(ctx, args)
+            await handler.get_entry(ctx, *handler_args)
         except Exception as e:
             print(f"Caught exception: {e}")
             traceback.print_exception(e)
@@ -176,21 +124,8 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
     @commands.command(name="stats", help="Show basic stats for a player")
     async def get_stats(self, ctx: commands.Context, *args: str) -> None:
         try:
-            match self.utils.get_game_from_channel(ctx.message):
-                case NYTGame.CONNECTIONS:
-                    await self.connections.get_stats(ctx, *args)
-                case NYTGame.STRANDS:
-                    await self.strands.get_stats(ctx, *args)
-                case NYTGame.WORDLE:
-                    await self.wordle.get_stats(ctx, *args)
-                case NYTGame.UNKNOWN:
-                    match self.utils.get_game_from_command(*args):
-                        case NYTGame.CONNECTIONS:
-                            await self.connections.get_stats(ctx, *args[1:])
-                        case NYTGame.STRANDS:
-                            await self.strands.get_stats(ctx, *args[1:])
-                        case NYTGame.WORDLE:
-                            await self.wordle.get_stats(ctx, *args[1:])
+            [handler, handler_args] = self.get_command_handler_and_args(ctx, args)
+            await handler.get_stats(ctx, *handler_args)
         except Exception as e:
             print(f"Caught exception: {e}")
             traceback.print_exception(e)
@@ -198,6 +133,28 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
     ######################
     #   HELPER METHODS   #
     ######################
+
+    def get_command_handler_and_args(self, ctx: commands.Context, args: tuple[str]) -> tuple[BaseCommandHandler, tuple[str]]:
+            match self.utils.get_game_from_channel(ctx.message):
+                case NYTGame.CONNECTIONS:
+                    return self.connections, args
+                case NYTGame.STRANDS:
+                    return self.strands, args
+                case NYTGame.WORDLE:
+                    return self.wordle, args
+                case NYTGame.PIPS:
+                    return self.pips, args
+                case NYTGame.UNKNOWN:
+                    match self.utils.get_game_from_command(*args):
+                        case NYTGame.CONNECTIONS:
+                            return self.connections, args[1:]
+                        case NYTGame.STRANDS:
+                            return self.strands, args[1:]
+                        case NYTGame.WORDLE:
+                            return self.wordle, args[1:]
+                        case NYTGame.PIPS:
+                            return self.pips, args[1:]
+            return None, ()
 
     def build_help_menu(self) -> None:
         self.help_menu.add('ranks', \

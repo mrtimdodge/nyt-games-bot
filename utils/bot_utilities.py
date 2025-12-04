@@ -3,19 +3,13 @@ import discord, io, re
 import matplotlib.pyplot as plt
 from bokeh.io.export import get_screenshot_as_png
 from bokeh.models import ColumnDataSource, DataTable, TableColumn
-from enum import Enum, auto
 from datetime import date, datetime, timedelta, timezone
 from discord.ext import commands
 from PIL import Image
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 
-class NYTGame(Enum):
-    CONNECTIONS = auto()
-    STRANDS = auto()
-    WORDLE = auto()
-    PIPS = auto()
-    UNKNOWN = auto()
+from utils.nyt_game import NYTGame
 
 class BotUtilities():
     def __init__(self, client: discord.Client, bot: commands.Bot) -> None:
@@ -112,6 +106,18 @@ class BotUtilities():
             return datetime.strptime(date_str, f'%m/%d/%Y').date()
         else:
             return None
+    def seconds_to_mm_ss(self, total_seconds):
+        """
+        Converts a total number of seconds into a MM:SS string format.
+
+        Args:
+            total_seconds (int): The total number of seconds.
+
+        Returns:
+            str: The time in MM:SS format.
+        """
+        minutes, seconds = divmod(total_seconds, 60)
+        return f"{minutes:02}:{seconds:02}"
 
     # CONVERT
 

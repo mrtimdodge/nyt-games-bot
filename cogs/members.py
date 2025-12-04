@@ -82,6 +82,14 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
                     await self.strands.get_ranks(ctx, *args)
                 case NYTGame.WORDLE:
                     await self.wordle.get_ranks(ctx, *args)
+                case NYTGame.UNKNOWN:
+                    match self.utils.get_game_from_command(*args):
+                        case NYTGame.CONNECTIONS:
+                            await self.connections.get_ranks(ctx, *args[1:])
+                        case NYTGame.STRANDS:
+                            await self.strands.get_ranks(ctx, *args[1:])
+                        case NYTGame.WORDLE:
+                            await self.wordle.get_ranks(ctx, *args[1:])
         except Exception as e:
             print(f"Caught exception: {e}")
             traceback.print_exception(e)
@@ -97,6 +105,14 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
                     await self.strands.get_missing(ctx, *args)
                 case NYTGame.WORDLE:
                     await self.wordle.get_missing(ctx, *args)
+                case NYTGame.UNKNOWN:
+                    match self.utils.get_game_from_command(*args):
+                        case NYTGame.CONNECTIONS:
+                            await self.connections.get_missing(ctx, *args[1:])
+                        case NYTGame.STRANDS:
+                            await self.strands.get_missing(ctx, *args[1:])
+                        case NYTGame.WORDLE:
+                            await self.wordle.get_missing(ctx, *args[1:])
         except Exception as e:
             print(f"Caught exception: {e}")
             traceback.print_exception(e)
@@ -112,6 +128,14 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
                     await self.strands.get_entries(ctx, *args)
                 case NYTGame.WORDLE:
                     await self.wordle.get_entries(ctx, *args)
+                case NYTGame.UNKNOWN:
+                    match self.utils.get_game_from_command(*args):
+                        case NYTGame.CONNECTIONS:
+                            await self.connections.get_entries(ctx, *args[1:])
+                        case NYTGame.STRANDS:
+                            await self.strands.get_entries(ctx, *args[1:])
+                        case NYTGame.WORDLE:
+                            await self.wordle.get_entries(ctx, *args[1:])
         except Exception as e:
             print(f"Caught exception: {e}")
             traceback.print_exception(e)
@@ -127,6 +151,14 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
                     await self.strands.get_entry(ctx, *args)
                 case NYTGame.WORDLE:
                     await self.wordle.get_entry(ctx, *args)
+                case NYTGame.UNKNOWN:
+                    match self.utils.get_game_from_command(*args):
+                        case NYTGame.CONNECTIONS:
+                            await self.connections.get_entry(ctx, *args[1:])
+                        case NYTGame.STRANDS:
+                            await self.strands.get_entry(ctx, *args[1:])
+                        case NYTGame.WORDLE:
+                            await self.wordle.get_entry(ctx, *args[1:])
         except Exception as e:
             print(f"Caught exception: {e}")
             traceback.print_exception(e)
@@ -142,6 +174,14 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
                     await self.strands.get_stats(ctx, *args)
                 case NYTGame.WORDLE:
                     await self.wordle.get_stats(ctx, *args)
+                case NYTGame.UNKNOWN:
+                    match self.utils.get_game_from_command(*args):
+                        case NYTGame.CONNECTIONS:
+                            await self.connections.get_stats(ctx, *args[1:])
+                        case NYTGame.STRANDS:
+                            await self.strands.get_stats(ctx, *args[1:])
+                        case NYTGame.WORDLE:
+                            await self.wordle.get_stats(ctx, *args[1:])
         except Exception as e:
             print(f"Caught exception: {e}")
             traceback.print_exception(e)
@@ -154,29 +194,37 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
         self.help_menu.add('ranks', \
                 explanation = "View the leaderboard over time or for a specific puzzle.", \
                 usage = "`?ranks (today|weekly|10-day|all-time)`\n`?ranks <MM/DD/YYYY>`\n`?ranks <puzzle #>`", \
-                notes = "- `?ranks` will default to `?ranks weekly`.\n- When using MM/DD/YYYY format, the date must be a Sunday.")
+                notes = "- `?ranks` will default to `?ranks weekly`.\n- When using MM/DD/YYYY format, the date must be a Sunday. If the channel does not have the game type in its name, the command will need the game type specified as the first argument.",)
         self.help_menu.add('missing', \
                 explanation = "View and mention all players who have not yet submitted a puzzle.", \
                 usage = "`?missing [<puzzle #>]`", \
-                notes = "`?missing` will default to today's puzzle.")
+                notes = "`?missing` will default to today's puzzle. If the channel does not have the game type in its name, the command will need the game type specified as the first argument.")
         self.help_menu.add('entries', \
                 explanation = "View a list of all submitted entries for a player.", \
-                usage = "`?entries [<player>]`")
+                usage = "`?entries [<player>]`", \
+                notes = "If the channel does not have the game type in its name, the command will need the game type specified as the first argument."
+            )
         self.help_menu.add('stats', \
                 explanation = "View more details stats on one or players.", \
                 usage = "`?stats <player1> [<player2> ...]`", \
-                notes = "`?stats` will default to just query for the calling user.")
+                notes = "`?stats` will default to just query for the calling user. If the channel does not have the game type in its name, the command will need the game type specified as the first argument.")
         self.help_menu.add('view', \
                 explanation = "View specific details of one or more entries.", \
-                usage = "`?view [<player>] <puzzle #1> [<puzzle #2> ...]`")
+                usage = "`?view [<player>] <puzzle #1> [<puzzle #2> ...]` ", \
+                notes = "If the channel does not have the game type in its name, the command will need the game type specified as the first argument."
+            )
         self.help_menu.add('add', \
                 explanation = "Manually add an entry to the database.", \
                 usage = "`?add [<player>] <entry>`", \
-                owner_only=True)
+                owner_only=True, \
+                notes = "If the channel does not have the game type in its name, the command will need the game type specified as the first argument."
+            )
         self.help_menu.add('remove', \
                 explanation = "Remove an entry from the database.", \
                 usage = "`?remove [<player>] <puzzle #>`", \
-                owner_only=True)
+                owner_only=True, \
+                notes = "If the channel does not have the game type in its name, the command will need the game type specified as the first argument."
+            )
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(MembersCog(bot))

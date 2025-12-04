@@ -1,3 +1,4 @@
+import os
 import discord, io, re
 import matplotlib.pyplot as plt
 from bokeh.io.export import get_screenshot_as_png
@@ -19,6 +20,9 @@ class BotUtilities():
     def __init__(self, client: discord.Client, bot: commands.Bot) -> None:
         self.client: discord.Client = client
         self.bot: commands.Bot = bot
+        self.chrome_driver_path = os.environ.get('CHROME_DRIVER_PATH')
+        self.chrome_binary_path = os.environ.get('CHROME_BINARY_PATH')
+
 
     # GAME TYPE
 
@@ -29,6 +33,19 @@ class BotUtilities():
         elif 'strands' in channel_name:
             return NYTGame.STRANDS
         elif 'wordle' in channel_name:
+            return NYTGame.WORDLE
+        else:
+            return NYTGame.UNKNOWN
+        
+    def get_game_from_command(self, *args: str) -> NYTGame:
+        if len(args) == 0:
+            return NYTGame.UNKNOWN
+        message_content: str = args[0].lower()
+        if 'connections' in message_content:
+            return NYTGame.CONNECTIONS
+        elif 'strands' in message_content:
+            return NYTGame.STRANDS
+        elif 'wordle' in message_content:
             return NYTGame.WORDLE
         else:
             return NYTGame.UNKNOWN
@@ -57,7 +74,7 @@ class BotUtilities():
             return False
 
     def is_wordle_submission(self, line: str) -> str:
-        return re.match(r'^Wordle (\d+|\d{1,3}(,\d{3})*)( 🎉)? (\d|X)\/\d$', line)
+        return re.match(r'^Wordle (\d+|\d{1,3}(,\d{3})*)( 🎉)? (\d|X)\/\d\*?$', line)
 
     def is_connections_submission(self, lines: str) -> str:
         return re.match(r'^Connections *(\n)Puzzle #\d+', lines)
@@ -108,11 +125,14 @@ class BotUtilities():
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument('--headless')
+        chrome_options.binary_location = self.chrome_binary_path
 
-        service = Service(executable_path='/usr/bin/chromedriver')
+        service = Service(executable_path=self.chrome_driver_path)
         driver = webdriver.Chrome(service=service, options=chrome_options)
+        
 
         generated: Image.Image = get_screenshot_as_png(data_table, driver=driver)
+        driver.quit()
         return self._trim_image(generated)
 
     def _trim_image(self, image: Image.Image) -> Image.Image:

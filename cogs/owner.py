@@ -33,6 +33,14 @@ class OwnerCog(commands.Cog, name="Owner-Only Commands"):
                 await self.strands.remove_entry(ctx, *args)
             case NYTGame.WORDLE:
                 await self.wordle.remove_entry(ctx, *args)
+            case NYTGame.UNKNOWN:
+                    match self.utils.get_game_from_command(*args):
+                        case NYTGame.CONNECTIONS:
+                            await self.connections.remove_entry(ctx, *args[1:])
+                        case NYTGame.STRANDS:
+                            await self.strands.remove_entry(ctx, *args[1:])
+                        case NYTGame.WORDLE:
+                            await self.wordle.remove_entry(ctx, *args[1:])
 
     @commands.is_owner()
     @commands.command(name='add', help='Manually adds a puzzle entry for a player')
@@ -44,6 +52,14 @@ class OwnerCog(commands.Cog, name="Owner-Only Commands"):
                 await self.strands.add_score(ctx, *args)
             case NYTGame.WORDLE:
                 await self.wordle.add_score(ctx, *args)
+            case NYTGame.UNKNOWN:
+                    match self.utils.get_game_from_command(*args):
+                        case NYTGame.CONNECTIONS:
+                            await self.connections.add_score(ctx, *args[1:])
+                        case NYTGame.STRANDS:
+                            await self.strands.add_score(ctx, *args[1:])
+                        case NYTGame.WORDLE:
+                            await self.wordle.add_score(ctx, *args[1:])
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(OwnerCog(bot))

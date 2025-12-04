@@ -30,6 +30,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     chromium-driver \
   && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y fonts-noto-color-emoji --no-install-recommends && rm -rf /var/lib/apt/lists/*
+
 # Create non-root user
 RUN useradd -ms /bin/bash appuser
 WORKDIR /app

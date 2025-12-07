@@ -60,6 +60,7 @@ class BaseDatabaseHandler(Protocol):
             password=self._mysql_pass,
             database=self._mysql_db_name
         )
+        self._db.autocommit = True
         self._cur = self._db.cursor(buffered=True)
 
     ####################
@@ -89,7 +90,7 @@ class BaseDatabaseHandler(Protocol):
         if not self._db.is_connected():
             self.connect()
         self._cur.execute("select distinct user_id from users")
-        return [row[0] for row in self._cur.fetchall()]
+        return [str(row[0]) for row in self._cur.fetchall()]
 
     def get_puzzles_by_player(self, user_id) -> list[int]:
         if not self._db.is_connected():

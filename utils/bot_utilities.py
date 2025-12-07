@@ -1,3 +1,4 @@
+from math import floor
 import os
 import discord, io, re
 import matplotlib.pyplot as plt
@@ -116,7 +117,7 @@ class BotUtilities():
         Returns:
             str: The time in MM:SS format.
         """
-        minutes, seconds = divmod(total_seconds, 60)
+        minutes, seconds = divmod(int(floor(total_seconds)), 60)
         return f"{minutes:02}:{seconds:02}"
 
     # CONVERT

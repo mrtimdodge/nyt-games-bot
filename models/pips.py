@@ -23,15 +23,15 @@ class PipsPlayerStats(BasePlayerStats):
         self.missed_games = len([p for p in puzzle_list if p not in player_puzzles])
 
         if len(player_entries) > 0:
-            self.avg_easy_seconds = stats.mean([e.easy_seconds for e in player_entries])
-            self.avg_medium_seconds = stats.mean([e.medium_seconds for e in player_entries])
-            self.avg_hard_seconds = stats.mean([e.hard_seconds for e in player_entries])
+            self.avg_easy_seconds = stats.mean([e.easy_seconds for e in player_entries if e.easy_seconds != None])
+            self.avg_medium_seconds = stats.mean([e.medium_seconds for e in player_entries if e.medium_seconds  != None])
+            self.avg_hard_seconds = stats.mean([e.hard_seconds for e in player_entries if e.hard_seconds != None])
 
             self.easy_cookie_rate = stats.mean([1.0 if e.easy_cookie else 0.0 for e in player_entries])
             self.medium_cookie_rate = stats.mean([1.0 if e.medium_cookie else 0.0 for e in player_entries])
             self.hard_cookie_rate = stats.mean([1.0 if e.hard_cookie else 0.0 for e in player_entries])
 
-            self.avg_total_seconds = stats.mean([e.easy_seconds + e.medium_seconds + e.hard_seconds for e in player_entries])
+            self.avg_total_seconds = stats.mean([e.easy_seconds + e.medium_seconds + e.hard_seconds for e in player_entries if e.easy_seconds != None and e.medium_seconds != None and e.hard_seconds != None])
         else:
             self.avg_easy_seconds = 0.0
             self.avg_medium_seconds = 0.0

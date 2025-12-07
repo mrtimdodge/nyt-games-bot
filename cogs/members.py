@@ -1,3 +1,4 @@
+import os
 import discord, traceback
 from discord.ext import commands
 from games.base_command_handler import BaseCommandHandler
@@ -16,6 +17,7 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
     wordle: BaseCommandHandler
     pips: BaseCommandHandler
     
+    confirm_entries: bool = os.environ.get('CONFIRM_ENTRIES', 'False').lower() in ('true', '1', 't')
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -27,6 +29,8 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
         self.strands = self.bot.strands
         self.wordle = self.bot.wordle
         self.pips = self.bot.pips
+
+        self._mysql_db_name = os.environ.get('PIPS_MYSQL_DB_NAME', "pips")
 
     #####################
     #   COMMAND SETUP   #
@@ -45,25 +49,29 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
                 if 'Wordle' in first_line and self.utils.is_wordle_submission(first_line):
                     content = '\n'.join(message.content.splitlines()[1:])
                     if self.wordle.add_entry(user_id, first_line, content):
-                        await message.add_reaction('✅')
+                        if(self.confirm_entries):
+                            await message.add_reaction('✅')
                     else:
                         await message.add_reaction('❌')
                 elif 'Connections' in first_line and self.utils.is_connections_submission(first_two_lines):
                     content = '\n'.join(message.content.splitlines()[2:])
                     if self.connections.add_entry(user_id, first_two_lines, content):
-                        await message.add_reaction('✅')
+                        if(self.confirm_entries):
+                            await message.add_reaction('✅')
                     else:
                         await message.add_reaction('❌')
                 elif 'Strands' in first_line and self.utils.is_strands_submission(first_two_lines):
                     content = '\n'.join(message.content.splitlines()[2:])
                     if self.strands.add_entry(user_id, first_two_lines, content):
-                        await message.add_reaction('✅')
+                        if(self.confirm_entries):
+                            await message.add_reaction('✅')
                     else:
                         await message.add_reaction('❌')
                 elif 'Pips' in first_line and self.utils.is_pips_submission(first_line):
                     content = '\n'.join(message.content.splitlines()[1:])
                     if self.pips.add_entry(user_id, first_line, content):
-                        await message.add_reaction('✅')
+                        if(self.confirm_entries):
+                            await message.add_reaction('✅')
                     else:
                         await message.add_reaction('❌')
         except Exception as e:

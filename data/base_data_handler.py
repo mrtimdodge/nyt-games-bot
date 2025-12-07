@@ -102,7 +102,7 @@ class BaseDatabaseHandler(Protocol):
         if not self._db.is_connected():
             self.connect()
         self._cur.execute(f"select distinct user_id from entries where puzzle_id = {puzzle_id}")
-        return [row[0] for row in self._cur.fetchall()]
+        return [str(row[0]) for row in self._cur.fetchall()]
 
     def get_entries_by_player(self, user_id: str, puzzle_list: list[int] = []) -> list[object]:
         pass

@@ -76,6 +76,31 @@ class BaseDatabaseHandler(Protocol):
             return list(range(sunday_puzzle_id, sunday_puzzle_id + 7))
         return []
 
+    def get_puzzles_by_month(self, query_date: date) -> list[int]:
+        thirty_day_months = [4, 6, 9, 11]
+        thirty_one_day_months = [1, 3, 5, 7, 8, 10, 12]
+        days_in_month = 1
+        if(query_date.month == self._utils.get_todays_date().month and query_date.year == self._utils.get_todays_date().year ):
+            days_in_month = self._utils.get_todays_date().day
+        elif query_date.month == 2:
+            if (query_date.year % 4 == 0 and query_date.year % 100 != 0) or (query_date.year % 400 == 0):
+                days_in_month = 29
+            else:
+                days_in_month = 28
+        elif query_date.month in thirty_day_months:
+            days_in_month = 30
+        elif query_date.month in thirty_one_day_months:
+            days_in_month = 31
+        
+        if days_in_month > 0:
+            first_day = query_date.replace(day=1)
+            puzzle_ids = []
+            for day in range(days_in_month):
+                current_date = first_day.replace(day=day + 1)
+                puzzle_ids.append(self.get_puzzle_by_date(current_date))
+            return puzzle_ids
+        return []
+    
     def get_all_puzzles(self) -> list[int]:
         if not self._db.is_connected():
             self.connect()

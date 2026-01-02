@@ -19,7 +19,11 @@ class WordleCommandHandler(BaseCommandHandler):
     ######################
 
     async def get_ranks(self, ctx: commands.Context, *args: str) -> None:
-        if len(args) == 0 or (len(args) == 1 and args[0] in ['alltime', 'all-time']):
+        if len(args) == 0 or (len(args) == 1 and args[0] in ['month', 'monthly']):
+            valid_puzzles = self.db.get_puzzles_by_month(self.utils.get_todays_date())
+            explanation_str = "This Month (so far)"
+            query_type = PuzzleQueryType.MULTI_PUZZLE
+        elif (len(args) == 1 and args[0] in ['alltime', 'all-time']):
             # ALL TIME
             valid_puzzles = self.db.get_all_puzzles()
             explanation_str = "All-time"

@@ -201,9 +201,9 @@ class PipsCommandHandler(BaseCommandHandler):
                         df.loc[i] = [
                             self.utils.get_nickname(user_id),
                             f"#{puzzle_id}",
-                            f"{self.utils.seconds_to_mm_ss(entry.easy_seconds)} {'🍪' if entry.easy_cookie else ''}",
-                            f"{self.utils.seconds_to_mm_ss(entry.medium_seconds)} {'🍪' if entry.medium_cookie else ''}"
-                            f"{self.utils.seconds_to_mm_ss(entry.hard_seconds)} {'🍪' if entry.hard_cookie else ''}",
+                            f"{self.utils.seconds_to_mm_ss(entry.easy_seconds)} {'🍪' if entry.easy_cookie else ''}" if entry.easy_seconds else '',
+                            f"{self.utils.seconds_to_mm_ss(entry.medium_seconds)} {'🍪' if entry.medium_cookie else ''}" if entry.medium_seconds else '',
+                            f"{self.utils.seconds_to_mm_ss(entry.hard_seconds)} {'🍪' if entry.hard_cookie else ''}" if entry.hard_seconds else '',
                         ]
                         found_match = True
                         break

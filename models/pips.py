@@ -23,25 +23,30 @@ class PipsPlayerStats(BasePlayerStats):
         self.missed_games = len([p for p in puzzle_list if p not in player_puzzles])
 
         if len(player_entries) > 0:
-            self.avg_easy_seconds = stats.mean([e.easy_seconds for e in player_entries if e.easy_seconds != None])
-            self.avg_medium_seconds = stats.mean([e.medium_seconds for e in player_entries if e.medium_seconds  != None])
-            self.avg_hard_seconds = stats.mean([e.hard_seconds for e in player_entries if e.hard_seconds != None])
+            easy_entries = [e for e in player_entries if e.easy_seconds != None]
+            medium_entries = [e for e in player_entries if e.medium_seconds != None]
+            hard_entries = [e for e in player_entries if e.hard_seconds != None]
+            self.avg_easy_seconds = stats.mean([e.easy_seconds for e in easy_entries] if len(easy_entries) > 0 else [-1.0])
+            self.avg_medium_seconds = stats.mean([e.medium_seconds for e in medium_entries] if len(medium_entries) > 0 else [-1.0])
+            self.avg_hard_seconds = stats.mean([e.hard_seconds for e in hard_entries] if len(hard_entries) > 0 else [-1.0])
 
-            self.easy_cookie_rate = stats.mean([1.0 if e.easy_cookie else 0.0 for e in player_entries])
-            self.medium_cookie_rate = stats.mean([1.0 if e.medium_cookie else 0.0 for e in player_entries])
-            self.hard_cookie_rate = stats.mean([1.0 if e.hard_cookie else 0.0 for e in player_entries])
+            self.easy_cookie_rate = stats.mean([1.0 if e.easy_cookie else 0.0 for e in easy_entries] if len(easy_entries) > 0 else [-1.0])
+            self.medium_cookie_rate = stats.mean([1.0 if e.medium_cookie else 0.0 for e in medium_entries] if len(medium_entries) > 0 else [-1.0])
+            self.hard_cookie_rate = stats.mean([1.0 if e.hard_cookie else 0.0 for e in hard_entries] if len(hard_entries) > 0 else [-1.0])
 
-            self.avg_total_seconds = stats.mean([e.easy_seconds + e.medium_seconds + e.hard_seconds for e in player_entries if e.easy_seconds != None and e.medium_seconds != None and e.hard_seconds != None])
+            avg_total_entries = [e for e in player_entries if e.easy_seconds != None and e.medium_seconds != None and e.hard_seconds != None]
+
+            self.avg_total_seconds = stats.mean([e.easy_seconds + e.medium_seconds + e.hard_seconds for e in avg_total_entries] if len(avg_total_entries) > 0 else [-1.0])
         else:
-            self.avg_easy_seconds = 0.0
-            self.avg_medium_seconds = 0.0
-            self.avg_hard_seconds = 0.0
+            self.avg_easy_seconds = -1.0
+            self.avg_medium_seconds = -1.0
+            self.avg_hard_seconds = -1.0
 
-            self.easy_cookie_rate = 0.0
-            self.medium_cookie_rate = 0.0
-            self.hard_cookie_rate = 0.0
+            self.easy_cookie_rate = -1.0
+            self.medium_cookie_rate = -1.0
+            self.hard_cookie_rate = -1.0
 
-            self.avg_total_seconds = 0.0
+            self.avg_total_seconds = -1.0
         self.rank = -1
 
     def get_stat_list(self) -> tuple[float, float, float, float, float, float, float]:

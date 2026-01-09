@@ -79,10 +79,10 @@ class PipsCommandHandler(BaseCommandHandler):
 
         if query_type != PuzzleQueryType.ALL_TIME:
             # for all queries except 'All-time', we rank based on the adjusted rating
-            stats.sort(key = lambda p: (p.avg_total_seconds))
+            stats.sort(key = lambda p: (p.avg_total_seconds < 0, p.avg_total_seconds))
         else:
             # for all-time queries, we must rank on the raw rating (since adj. will be skewed)
-            stats.sort(key = lambda p: (p.avg_total_seconds))
+            stats.sort(key = lambda p: (p.avg_total_seconds < 0, p.avg_total_seconds))
 
         if query_type == PuzzleQueryType.SINGLE_PUZZLE:
             # stats for just 1 puzzle
@@ -97,9 +97,9 @@ class PipsCommandHandler(BaseCommandHandler):
                     df.loc[i] = [
                         player_stats.rank,
                         self.utils.get_nickname(player_stats.user_id),
-                        f"{self.utils.seconds_to_mm_ss(player_stats.avg_easy_seconds)} {'🍪' if player_stats.easy_cookie_rate >= 1.0 else ''}",
-                        f"{self.utils.seconds_to_mm_ss(player_stats.avg_medium_seconds)} {'🍪' if player_stats.medium_cookie_rate >= 1.0 else ''}",
-                        f"{self.utils.seconds_to_mm_ss(player_stats.avg_hard_seconds)} {'🍪' if player_stats.hard_cookie_rate >= 1.0 else ''}"
+                        f"{self.utils.seconds_to_mm_ss(player_stats.avg_easy_seconds)} {'🍪' if player_stats.easy_cookie_rate >= 1.0 else ''}" if player_stats.avg_easy_seconds >= 0 else '',
+                        f"{self.utils.seconds_to_mm_ss(player_stats.avg_medium_seconds)} {'🍪' if player_stats.medium_cookie_rate >= 1.0 else ''}" if player_stats.avg_medium_seconds >= 0 else '',
+                        f"{self.utils.seconds_to_mm_ss(player_stats.avg_hard_seconds)} {'🍪' if player_stats.hard_cookie_rate >= 1.0 else ''}" if player_stats.avg_hard_seconds >= 0 else ''
                     ]
         elif query_type == PuzzleQueryType.MULTI_PUZZLE or query_type == PuzzleQueryType.ALL_TIME:
         
@@ -114,9 +114,9 @@ class PipsCommandHandler(BaseCommandHandler):
                     df.loc[i] = [
                         player_stats.rank,
                         self.utils.get_nickname(player_stats.user_id),
-                        f"{self.utils.seconds_to_mm_ss(player_stats.avg_easy_seconds)}",
-                        f"{self.utils.seconds_to_mm_ss(player_stats.avg_medium_seconds)}",
-                        f"{self.utils.seconds_to_mm_ss(player_stats.avg_hard_seconds)}",
+                        f"{self.utils.seconds_to_mm_ss(player_stats.avg_easy_seconds)}" if player_stats.avg_easy_seconds >= 0 else '',
+                        f"{self.utils.seconds_to_mm_ss(player_stats.avg_medium_seconds)}" if player_stats.avg_medium_seconds >= 0 else '',
+                        f"{self.utils.seconds_to_mm_ss(player_stats.avg_hard_seconds)}" if player_stats.avg_hard_seconds >= 0 else '',
                         f"{player_stats.easy_cookie_rate:.2%}",
                         f"{player_stats.medium_cookie_rate:.2%}",
                         f"{player_stats.hard_cookie_rate:.2%}",

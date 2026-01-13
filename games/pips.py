@@ -86,7 +86,7 @@ class PipsCommandHandler(BaseCommandHandler):
 
         if query_type == PuzzleQueryType.SINGLE_PUZZLE:
             # stats for just 1 puzzle
-            df = pd.DataFrame(columns=['Rank', 'User', 'Easy Time', 'Medium Time', 'Hard Time', 'Score'])
+            df = pd.DataFrame(columns=['Rank', 'User', 'Easy Time', 'Med Time', 'Hard Time', 'Score'])
             for i, player_stats in enumerate(stats):
                 if i > 0 and player_stats.get_stat_list() == stats[i - 1].get_stat_list():
                     player_stats.rank = stats[i - 1].rank
@@ -105,7 +105,7 @@ class PipsCommandHandler(BaseCommandHandler):
         elif query_type == PuzzleQueryType.MULTI_PUZZLE or query_type == PuzzleQueryType.ALL_TIME:
         
             # stats for 2+ puzzles, but not all-time
-            df = pd.DataFrame(columns=['Rank', 'User', 'Score', 'Easy Avg', 'Medium Avg', 'Hard Avg','Easy 🍪%','Medium 🍪%', 'Hard 🍪%', '🧩', '🚫'])
+            df = pd.DataFrame(columns=['Rank', 'User', 'Score', 'Easy Avg', 'Med Avg', 'Hard Avg','Easy 🍪%','Med 🍪%', 'Hard 🍪%', '🧩', '🚫'])
             for i, player_stats in enumerate(stats):
                 if i > 0 and player_stats.get_stat_list() == stats[i - 1].get_stat_list():
                     player_stats.rank = stats[i - 1].rank
@@ -115,7 +115,7 @@ class PipsCommandHandler(BaseCommandHandler):
                     df.loc[i] = [
                         player_stats.rank,
                         self.utils.get_nickname(player_stats.user_id),
-                        f"{player_stats.score:.2f}",
+                        f"{player_stats.score:.0f}",
                         f"{self.utils.seconds_to_mm_ss(player_stats.avg_easy_seconds)}" if player_stats.avg_easy_seconds >= 0 else '',
                         f"{self.utils.seconds_to_mm_ss(player_stats.avg_medium_seconds)}" if player_stats.avg_medium_seconds >= 0 else '',
                         f"{self.utils.seconds_to_mm_ss(player_stats.avg_hard_seconds)}" if player_stats.avg_hard_seconds >= 0 else '',
@@ -195,7 +195,7 @@ class PipsCommandHandler(BaseCommandHandler):
 
         if user_id in self.db.get_all_players():
             user_puzzles: list[PipsPuzzleEntry] = self.db.get_entries_by_player(user_id)
-            df = pd.DataFrame(columns=['User', 'Puzzle #', 'Easy Time', 'Medium Time', 'Hard Time', "Score"])
+            df = pd.DataFrame(columns=['User', 'Puzzle #', 'Easy Time', 'Med Time', 'Hard Time', "Score"])
             for i, puzzle_id in enumerate(puzzle_ids):
                 found_match = False
                 for entry in user_puzzles:
@@ -259,7 +259,7 @@ class PipsCommandHandler(BaseCommandHandler):
                     return
                 
 
-        df = pd.DataFrame(columns=['User', 'Easy Avg', 'Medium Avg', 'Hard Avg','Easy 🍪%','Medium 🍪%', 'Hard 🍪%', '🧩', '🚫'])
+        df = pd.DataFrame(columns=['User', 'Easy Avg', 'Med Avg', 'Hard Avg','Easy 🍪%','Med 🍪%', 'Hard 🍪%', '🧩', '🚫'])
         for i, user_id in enumerate(user_ids):
             puzzle_list = self.db.get_puzzles_by_player(user_id)
             player_stats = PipsPlayerStats(user_id, puzzle_list, self.db)

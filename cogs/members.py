@@ -1,8 +1,10 @@
 import os
+import re
 import discord, traceback
 from discord.ext import commands
 from games.base_command_handler import BaseCommandHandler
 from utils.bot_utilities import BotUtilities, NYTGame
+from utils.giphy_handler import GiphyHandler
 from utils.help_handler import HelpMenuHandler
 
 class MembersCog(commands.Cog, name="Normal Members Commands"):
@@ -10,6 +12,7 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
     bot: commands.Bot
     utils: BotUtilities
     help_menu: HelpMenuHandler
+    giphy_handler: GiphyHandler
 
     # games
     connections: BaseCommandHandler
@@ -23,6 +26,7 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
         self.bot = bot
         self.utils = self.bot.utils
         self.help_menu = self.bot.help_menu
+        self.giphy_handler = self.bot.giphy_handler
         self.build_help_menu()
 
         self.connections = self.bot.connections
@@ -70,8 +74,15 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
                 elif 'Pips' in first_line and self.utils.is_pips_submission(first_line):
                     content = '\n'.join(message.content.splitlines()[1:])
                     if self.pips.add_entry(user_id, first_line, content):
+                        puzzle_id_title = re.findall(r'[\d,]+', first_line)
+                        puzzle_id = int(str(puzzle_id_title[0]).replace(',', ''))
                         if(self.confirm_entries):
                             await message.add_reaction('✅')
+                        if(await self.pips.is_triple_cookie(user_id, puzzle_id)):
+                            self.giphy_handler.start()
+                            link = await self.giphy_handler.random_request(tag="cookie monster @sesamestreet")
+                            await message.channel.send(f"{message.author.mention} \n {link}")
+                            await self.giphy_handler.close()
                     else:
                         await message.add_reaction('❌')
         except Exception as e:

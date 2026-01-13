@@ -5,6 +5,7 @@ from games.pips import PipsCommandHandler
 from games.strands import StrandsCommandHandler
 from games.wordle import WordleCommandHandler
 from utils.bot_utilities import BotUtilities
+from utils.giphy_handler import GiphyHandler
 from utils.help_handler import HelpMenuHandler
 
 def load_env_file(path: str | None = None, override: bool = False) -> None:
@@ -42,6 +43,7 @@ os.environ['WDM_LOG_LEVEL'] = '0'
 token = os.getenv('DISCORD_TOKEN')
 discord_env = os.getenv('DISCORD_ENV')
 guild_id = os.getenv('GUILD_ID')
+giphy_api_key = os.getenv('GIPHY_API_KEY')
 
 # build Discord client
 intents = discord.Intents.all()
@@ -54,6 +56,7 @@ bot = commands.Bot(command_prefix='?', intents=intents, activity=activity, help_
 bot.guild_id = int(guild_id) if guild_id.isnumeric() else -1
 bot.utils = BotUtilities(client, bot)
 bot.help_menu = HelpMenuHandler()
+bot.giphy_handler = GiphyHandler(giphy_api_key)
 
 # create games
 bot.connections = ConnectionsCommandHandler(bot.utils)

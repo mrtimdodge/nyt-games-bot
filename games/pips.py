@@ -79,7 +79,7 @@ class PipsCommandHandler(BaseCommandHandler):
 
         if query_type != PuzzleQueryType.ALL_TIME:
             # for all queries except 'All-time', we rank based on the adjusted rating
-            stats.sort(key = lambda p: (p.score, p.avg_total_seconds < 0, p.avg_total_seconds))
+            stats.sort(key = lambda p: (p.score * -1.0, p.avg_total_seconds < 0, p.avg_total_seconds))
         else:
             # for all-time queries, we must rank on the raw rating (since adj. will be skewed)
             stats.sort(key = lambda p: (p.avg_total_seconds < 0, p.avg_total_seconds))

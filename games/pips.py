@@ -26,7 +26,7 @@ class PipsCommandHandler(BaseCommandHandler):
         elif (len(args) == 1 and args[0] in ['alltime', 'all-time']):
             # ALL TIME
             valid_puzzles = self.db.get_all_puzzles()
-            explanation_str = "All-time (Based on Average Total Time)"
+            explanation_str = "All-time (Based on Average Score)"
             query_type = PuzzleQueryType.ALL_TIME
         elif len(args) == 1 and args[0] in ['week', 'weekly']:
             # WEEKLY
@@ -77,12 +77,15 @@ class PipsCommandHandler(BaseCommandHandler):
             await ctx.reply(f"Sorry, no users could be found for this query.")
             return
 
-        if query_type != PuzzleQueryType.ALL_TIME:
-            # for all queries except 'All-time', we rank based on the adjusted rating
-            stats.sort(key = lambda p: (p.score * -1.0, p.avg_total_seconds < 0, p.avg_total_seconds))
+        if query_type == PuzzleQueryType.SINGLE_PUZZLE:
+            # single puzzle: rank by score
+            stats.sort(key=lambda p: (p.score * -1.0, p.avg_total_seconds < 0, p.avg_total_seconds))
+        elif query_type == PuzzleQueryType.MULTI_PUZZLE:
+            # multi-puzzle: rank by avg score + completion bonus per puzzle completed
+            stats.sort(key=lambda p: (p.rank_score * -1.0, p.avg_total_seconds < 0, p.avg_total_seconds))
         else:
-            # for all-time queries, we must rank on the raw rating (since adj. will be skewed)
-            stats.sort(key = lambda p: (p.avg_total_seconds < 0, p.avg_total_seconds))
+            # all-time: rank by avg score per puzzle (no completion bonus to avoid skew)
+            stats.sort(key=lambda p: (p.avg_score * -1.0, p.avg_total_seconds < 0, p.avg_total_seconds))
 
         if query_type == PuzzleQueryType.SINGLE_PUZZLE:
             # stats for just 1 puzzle
@@ -103,9 +106,15 @@ class PipsCommandHandler(BaseCommandHandler):
                         f"{player_stats.score:.2f}"
                     ]
         elif query_type == PuzzleQueryType.MULTI_PUZZLE or query_type == PuzzleQueryType.ALL_TIME:
-        
-            # stats for 2+ puzzles, but not all-time
-            df = pd.DataFrame(columns=['Rank', 'User', 'Score', 'Easy Avg', 'Med Avg', 'Hard Avg','Easy 🍪%','Med 🍪%', 'Hard 🍪%', '🧩', '🚫'])
+
+            if query_type == PuzzleQueryType.ALL_TIME:
+                score_label = 'Avg Score'
+                get_display_score = lambda p: f"{p.avg_score:.2f}"
+            else:
+                score_label = 'Adj Score'
+                get_display_score = lambda p: f"{p.rank_score:.1f}"
+
+            df = pd.DataFrame(columns=['Rank', 'User', score_label, 'Easy Avg', 'Med Avg', 'Hard Avg','Easy 🍪%','Med 🍪%', 'Hard 🍪%', '🧩', '🚫'])
             for i, player_stats in enumerate(stats):
                 if i > 0 and player_stats.get_stat_list() == stats[i - 1].get_stat_list():
                     player_stats.rank = stats[i - 1].rank
@@ -115,7 +124,7 @@ class PipsCommandHandler(BaseCommandHandler):
                     df.loc[i] = [
                         player_stats.rank,
                         self.utils.get_nickname(player_stats.user_id),
-                        f"{player_stats.score:.0f}",
+                        get_display_score(player_stats),
                         f"{self.utils.seconds_to_mm_ss(player_stats.avg_easy_seconds)}" if player_stats.avg_easy_seconds >= 0 else '',
                         f"{self.utils.seconds_to_mm_ss(player_stats.avg_medium_seconds)}" if player_stats.avg_medium_seconds >= 0 else '',
                         f"{self.utils.seconds_to_mm_ss(player_stats.avg_hard_seconds)}" if player_stats.avg_hard_seconds >= 0 else '',

@@ -1,11 +1,48 @@
 import os
 import re
+import random
+import calendar
 import discord, traceback
-from discord.ext import commands
+from datetime import time, timezone
+from discord.ext import commands, tasks
 from games.base_command_handler import BaseCommandHandler
 from utils.bot_utilities import BotUtilities, NYTGame
 from utils.giphy_handler import GiphyHandler
 from utils.help_handler import HelpMenuHandler
+
+# GIFs to send when someone solves Wordle in 2 guesses (random pick)
+WORDLE_TWO_GUESS_GIFS = [
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdjFvZWx4bzZkYzNxNmdoN3NraHRzNjA4aDR2ZXV0NDRhMThhYW5veiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/toKE0zZrzkjuLKBucs/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdjFvZWx4bzZkYzNxNmdoN3NraHRzNjA4aDR2ZXV0NDRhMThhYW5veiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/yjXBxGI0Fm8UTfDRb2/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTJlMGd1eWR0ZDFlMWgxMGZkcWF5amszNXQyemdhdG02bDV3ZTJ1eSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/9PaFsBEVO4EOKok7de/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTJlMGd1eWR0ZDFlMWgxMGZkcWF5amszNXQyemdhdG02bDV3ZTJ1eSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/QVSn2cJoSqaTvgfQ2D/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdjFvZWx4bzZkYzNxNmdoN3NraHRzNjA4aDR2ZXV0NDRhMThhYW5veiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26gsqQxPQXHBiBEUU/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdjFvZWx4bzZkYzNxNmdoN3NraHRzNjA4aDR2ZXV0NDRhMThhYW5veiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/AE7Qa6j57XuRzeMkgh/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdjFvZWx4bzZkYzNxNmdoN3NraHRzNjA4aDR2ZXV0NDRhMThhYW5veiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/Su6sx7xA8AAK6mK9jD/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdjFvZWx4bzZkYzNxNmdoN3NraHRzNjA4aDR2ZXV0NDRhMThhYW5veiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/u00BUvSb3L5cIQHhjw/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3ZzdxajBtZW8zZ3YzODV6dDl3djh5eTEwdWg3NW84Y3JvN216N290bCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0HlJHvYDbt0dbURi/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3cHR6aTc1a3Nld3c4Yzcza2c2YWt1eWxycW5lZHYxNnRndnp5Z2t2aCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/TLAgg2jUF3LXZHMXc5/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3OTEwZDJmNTcxeGVyaDh6ZGp5em0zN3JtbXdqaWh5dDY3b2I2bDl3aCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/xTiN0h0Kh5gH7yQYUw/giphy.gif"
+]
+
+# GIF to send when someone solves Wordle in 1 guess (tags @everyone)
+WORDLE_ONE_GUESS_GIF = "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWFrcTIzc280ajh1czI5eGhsZ2diOWE5NmNqdTM5YWtjbG10M3doeiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/JRF85A7Bcl2YU/giphy.gif"  # Add Giphy GIF URL here
+
+# 11pm EST = 04:00 UTC
+_11PM_EST = time(hour=4, minute=0, tzinfo=timezone.utc)
+
+
+class _ChannelProxy:
+    """Minimal proxy so a TextChannel can be passed where commands.Context is expected."""
+    def __init__(self, channel: discord.TextChannel):
+        self.channel = channel
+
+    async def send(self, *args, **kwargs):
+        return await self.channel.send(*args, **kwargs)
+
+    async def reply(self, *args, **kwargs):
+        return await self.channel.send(*args, **kwargs)
+
 
 class MembersCog(commands.Cog, name="Normal Members Commands"):
     # class variables
@@ -19,7 +56,7 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
     strands: BaseCommandHandler
     wordle: BaseCommandHandler
     pips: BaseCommandHandler
-    
+
     confirm_entries: bool = os.environ.get('CONFIRM_ENTRIES', 'False').lower() in ('true', '1', 't')
 
     def __init__(self, bot: commands.Bot):
@@ -35,6 +72,51 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
         self.pips = self.bot.pips
 
         self._mysql_db_name = os.environ.get('PIPS_MYSQL_DB_NAME', "pips")
+        self.monthly_results_task.start()
+
+    def cog_unload(self):
+        self.monthly_results_task.cancel()
+
+    #####################
+    #   SCHEDULED TASKS #
+    #####################
+
+    @tasks.loop(time=_11PM_EST)
+    async def monthly_results_task(self):
+        today = self.utils.get_todays_date()
+        if today.day != calendar.monthrange(today.year, today.month)[1]:
+            return
+
+        month_name = today.strftime('%B %Y')
+        guild = self.bot.get_guild(self.bot.guild_id)
+        if guild is None:
+            return
+
+        nyt_channel_id = os.environ.get('NYT_GAMES_CHANNEL')
+        shared_channel = None
+        if nyt_channel_id and nyt_channel_id.isnumeric():
+            shared_channel = guild.get_channel(int(nyt_channel_id))
+
+        for game_name, handler in [
+            ('wordle', self.wordle),
+            ('connections', self.connections),
+            ('strands', self.strands),
+            ('pips', self.pips),
+        ]:
+            if shared_channel is not None:
+                channel = shared_channel
+            else:
+                channel = discord.utils.find(
+                    lambda ch, g=game_name: g in ch.name.lower(),
+                    guild.text_channels
+                )
+            if channel is not None:
+                await channel.send(f"**📊 Final Monthly Results ({game_name.title()}): {month_name}!**")
+                await handler.get_ranks(_ChannelProxy(channel), 'month')
+
+    @monthly_results_task.before_loop
+    async def before_monthly_results_task(self):
+        await self.bot.wait_until_ready()
 
     #####################
     #   COMMAND SETUP   #
@@ -55,6 +137,14 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
                     if self.wordle.add_entry(user_id, first_line, content):
                         if(self.confirm_entries):
                             await message.add_reaction('✅')
+                        score_match = re.search(r'(\d)\/6', first_line)
+                        if score_match:
+                            score = int(score_match.group(1))
+                            if score == 2 and WORDLE_TWO_GUESS_GIFS:
+                                gif_url = random.choice(WORDLE_TWO_GUESS_GIFS)
+                                await message.channel.send(f"{message.author.mention}\n{gif_url}")
+                            elif score == 1 and WORDLE_ONE_GUESS_GIF:
+                                await message.channel.send(f"@everyone {message.author.mention}\n{WORDLE_ONE_GUESS_GIF}")
                     else:
                         await message.add_reaction('❌')
                 elif 'Connections' in first_line and self.utils.is_connections_submission(first_two_lines):
@@ -103,8 +193,13 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
     @commands.command(name='ranks', help='Show ranks of players in the server')
     async def get_ranks(self, ctx: commands.Context, *args: str) -> None:
         try:
-            [handler, handler_args] = self.get_command_handler_and_args(ctx, args)
-            await handler.get_ranks(ctx, *handler_args)
+            if len(args) >= 1 and args[0] == 'all':
+                remaining_args = args[1:]
+                for handler in [self.wordle, self.connections, self.strands, self.pips]:
+                    await handler.get_ranks(ctx, *remaining_args)
+            else:
+                [handler, handler_args] = self.get_command_handler_and_args(ctx, args)
+                await handler.get_ranks(ctx, *handler_args)
         except Exception as e:
             print(f"Caught exception: {e}")
             traceback.print_exception(e)
@@ -178,8 +273,8 @@ class MembersCog(commands.Cog, name="Normal Members Commands"):
     def build_help_menu(self) -> None:
         self.help_menu.add('ranks', \
                 explanation = "View the leaderboard over time or for a specific puzzle.", \
-                usage = "`?ranks (today|weekly|10-day|all-time)`\n`?ranks <MM/DD/YYYY>`\n`?ranks <puzzle #>`", \
-                notes = "- `?ranks` will default to `?ranks weekly`.\n- When using MM/DD/YYYY format, the date must be a Sunday. If the channel does not have the game type in its name, the command will need the game type specified as the first argument.",)
+                usage = "`?ranks (today|weekly|10-day|all-time)`\n`?ranks <MM/DD/YYYY>`\n`?ranks <puzzle #>`\n`?ranks all [<time period>]`", \
+                notes = "- `?ranks` will default to `?ranks weekly`.\n- `?ranks all` shows leaderboards for all games.\n- When using MM/DD/YYYY format, the date must be a Sunday. If the channel does not have the game type in its name, the command will need the game type specified as the first argument.",)
         self.help_menu.add('missing', \
                 explanation = "View and mention all players who have not yet submitted a puzzle.", \
                 usage = "`?missing [<puzzle #>]`", \

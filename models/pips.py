@@ -19,12 +19,13 @@ class PipsPlayerStats(BasePlayerStats):
     MEDIUM_COOKIE_TIME = 40
     HARD_COOKIE_TIME = 60
 
-    MAX_TIME_MULTIPLIER = os.getenv("MAX_TIME_MULTIPLIER", 12.0)
-    MIN_SCORE_FOR_COMPLETION = os.getenv("MIN_SCORE_FOR_COMPLETION", 10.0)
+    MAX_TIME_MULTIPLIER = float(os.getenv("MAX_TIME_MULTIPLIER", 12.0))
+    MIN_SCORE_FOR_COMPLETION = float(os.getenv("MIN_SCORE_FOR_COMPLETION", 10.0))
 
-    EASY_MULTIPLIER = os.getenv("EASY_MULTIPLIER", 1.0)
-    MEDIUM_MULTIPLIER = os.getenv("MEDIUM_MULTIPLIER", 1.5)
-    HARD_MULTIPLIER = os.getenv("HARD_MULTIPLIER", 2.0)
+    EASY_MULTIPLIER = float(os.getenv("EASY_MULTIPLIER", 1.0))
+    MEDIUM_MULTIPLIER = float(os.getenv("MEDIUM_MULTIPLIER", 1.5))
+    HARD_MULTIPLIER = float(os.getenv("HARD_MULTIPLIER", 2.0))
+    COMPLETION_BONUS = float(os.getenv("COMPLETION_BONUS", 5.0))
 
 
     def __init__(self, user_id: str, puzzle_list: list[int], db: BaseDatabaseHandler) -> None:
@@ -51,7 +52,9 @@ class PipsPlayerStats(BasePlayerStats):
 
             self.avg_total_seconds = stats.mean([e.easy_seconds + e.medium_seconds + e.hard_seconds for e in avg_total_entries] if len(avg_total_entries) > 0 else [-1.0])
 
-            self.score = sum([self.get_entry_score(e) for e in player_entries]) if len(player_entries) > 0 else [0.0]
+            self.score = sum([self.get_entry_score(e) for e in player_entries])
+            self.avg_score = self.score / len(player_entries)
+            self.rank_score = self.avg_score + self.COMPLETION_BONUS * len(player_entries)
         else:
             self.avg_easy_seconds = -1.0
             self.avg_medium_seconds = -1.0
@@ -62,7 +65,9 @@ class PipsPlayerStats(BasePlayerStats):
             self.hard_cookie_rate = -1.0
 
             self.avg_total_seconds = -1.0
-            self.score = 0
+            self.score = 0.0
+            self.avg_score = 0.0
+            self.rank_score = 0.0
         self.rank = -1
 
     def get_stat_list(self) -> tuple[float, float, float, float, float, float, float]:

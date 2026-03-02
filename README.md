@@ -1,64 +1,123 @@
-# NYT Games Discord Bot 🤖
+# NYT Games Discord Bot
 
-### A little Discord bot that tracks Wordle, Connections, and Strands scores and maintains a server leaderboard.
+A Discord bot that tracks **Wordle**, **Connections**, **Strands**, and **Pips** scores and maintains server leaderboards.
 
-Track the daily, weekly, and all-time leaderboards for your server, plus get some additional stats on how well you've played. Just copy & paste your game results into Discord chat and the bot will track it.
+Just paste your game results into Discord and the bot records them automatically. Leaderboards update in real time and a monthly summary is posted automatically at the end of each month.
 
-### 🟩 🟨 ⬜ • 🟨 🟩 🟦 🟪 • 🔵 💡 🟡
+---
+
+## Games Supported
+
+| Game | Emoji |
+|------|-------|
+| Wordle | 🟩 🟨 ⬜ |
+| Connections | 🟨 🟩 🟦 🟪 |
+| Strands | 🔵 💡 🟡 |
+| Pips | 🍪 |
+
+---
 
 ## Commands
-- `?ranks (today|week|all-time|<puzzle #>)`
-  - View ranked leaderboard for today, this week, all-time, or for a specific puzzle. Defaults to this week.
-- `?missing (today|<puzzle #>)`
-  - View users that are missing today's puzzle or missing the specified puzzle. Defaults to today.
-- `?entries [<user>]`
-  - View recorded entries in the database for \<user\>. Defaults to requester.
-- `?stats [<user1> <user2> ...]`
-  - View game stats for one or more users. Defaults to requester.
-- `?view [<user>] <puzzle #1> [<puzzle #2> ...]`
-  - View entries for a user and one or more puzzles. Defaults to requester.
 
-## Admin Commands
-- `?add [<user>] <puzzle output>`
-  - Manually add puzzle entry for a user. Defaults to requester.
-- `?remove [<user>] <puzzle #>`
-  - Manually remove puzzle entry for a user. Defaults to requester.
+| Command | Description |
+|---------|-------------|
+| `?ranks [today\|week\|month\|10-day\|all-time\|<puzzle #>\|<MM/DD/YYYY>]` | Leaderboard for the given period. Defaults to this week. |
+| `?ranks all [<period>]` | Show leaderboards for all games at once. |
+| `?missing [<puzzle #>]` | List players who haven't submitted. Defaults to today. |
+| `?entries [<player>]` | List all recorded entries for a player. Defaults to you. |
+| `?stats [<player1> <player2> ...]` | Show stats for one or more players. Defaults to you. |
+| `?view [<player>] <puzzle #> [...]` | View specific puzzle entries for a player. |
+| `?help [<command>]` | Show help for all commands or a specific one. |
 
-NOTE: `?add` is NOT needed to record entries. Just paste the output from the game right into the the channel and the bot will record it. The bot will react to your message with a ✅ to let you know it has been counted.
+### Admin Commands
 
-## Example Usage
+| Command | Description |
+|---------|-------------|
+| `?add [<player>] <puzzle output>` | Manually add an entry. |
+| `?remove [<player>] <puzzle #>` | Remove an entry. |
 
-1. Adding a score normally (without `?add`):
+> **Tip:** You don't need `?add` — just paste your game result directly in the channel and the bot records it. It will react with ✅ on success or ❌ if something went wrong.
 
-<img height="200" alt="image" src="https://github.com/brianliebe/nyt-games-bot/assets/25470007/8b747069-fce8-4e49-9622-cce648d66ff7">
-<img height="200" alt="image" src="https://github.com/brianliebe/nyt-games-bot/assets/25470007/066219c6-75da-477e-8f97-439dc34196e7">
-<img height="200" alt="image" src="https://github.com/brianliebe/nyt-games-bot/assets/25470007/76e31297-f7ef-4283-96de-4b599d7271f7">
-<br/><br/>
+---
 
-2. Viewing the leaderboard with `?ranks`:
+## Special Events
 
-| Today's Puzzle | Last 7 Days | All-time |
-| ---- | ---- | ---- |
-| ![image](https://user-images.githubusercontent.com/25470007/213815598-ea7a74b5-bdb9-43e8-857f-4c8987cced71.png) | ![image](https://user-images.githubusercontent.com/25470007/213814958-9477c2b7-6fbf-4c0f-b931-a546fccb9333.png) | ![image](https://user-images.githubusercontent.com/25470007/213812667-71a8765f-9673-4cd3-8228-d73e8ddd1673.png)
+- **Wordle in 2** — bot posts a celebratory GIF
+- **Wordle in 1** — bot pings @everyone with a GIF
+- **Pips triple cookie** — bot posts a Cookie Monster GIF
+- **End of month** — bot automatically posts final monthly leaderboards for all games at 11pm EST on the last day of the month
 
-3. Viewing missing players for today's puzzle with `?missing`:
+---
 
-![image](https://user-images.githubusercontent.com/25470007/213816585-5e6a8217-e4ab-4d79-aa5f-156967c843b5.png)
+## Setup
 
-4. Viewing a user's past entries with `?entries`:
+### 1. Environment Variables
 
-![image](https://user-images.githubusercontent.com/25470007/150624781-5ff68297-c62f-4d69-a228-50680d37fc96.png)
+Copy `.env_docker` to `.env` and fill in your values:
 
-5. Viewing stats for one or more players with `?stats`:
+```env
+DISCORD_TOKEN=your_token_here
+GUILD_ID=your_guild_id
+DISCORD_ENV=production
 
-| One player | Two or more players |
-| ---- | ---- |
-| ![image](https://user-images.githubusercontent.com/25470007/213816840-58b1dd57-5862-4a1b-a5d6-58eecfe1ba0f.png) | ![image](https://user-images.githubusercontent.com/25470007/213817547-7a066053-56f9-4149-9740-5abc3ffcf68f.png) |
+# One block per game (wordle / connections / strands / pips)
+WORDLE_MYSQL_HOST=localhost
+WORDLE_MYSQL_USER=root
+WORDLE_MYSQL_PASS=password
+WORDLE_MYSQL_DB_NAME=nyt_wordle
 
-## TODOs
+CONNECTIONS_MYSQL_HOST=localhost
+CONNECTIONS_MYSQL_USER=root
+CONNECTIONS_MYSQL_PASS=password
+CONNECTIONS_MYSQL_DB_NAME=nyt_connections
 
-- [ ] Rework the pips scoring system
+STRANDS_MYSQL_HOST=localhost
+STRANDS_MYSQL_USER=root
+STRANDS_MYSQL_PASS=password
+STRANDS_MYSQL_DB_NAME=nyt_strands
 
-## Notes
+PIPS_MYSQL_HOST=localhost
+PIPS_MYSQL_USER=root
+PIPS_MYSQL_PASS=password
+PIPS_MYSQL_DB_NAME=nyt_pips
 
-To create your own bot and deploy this yourself, I highly suggest taking a look at [this](https://realpython.com/how-to-make-a-discord-bot-python/) guide.
+# Optional
+GIPHY_API_KEY=your_giphy_key       # enables celebratory GIFs
+CONFIRM_ENTRIES=True                # react ✅/❌ to submissions
+NYT_GAMES_CHANNEL=channel_id       # post all games to one channel instead of per-game channels
+
+# Pips scoring tuning
+MAX_TIME_MULTIPLIER=12.0
+MIN_SCORE_FOR_COMPLETION=10.0
+EASY_MULTIPLIER=1.0
+MEDIUM_MULTIPLIER=1.5
+HARD_MULTIPLIER=2.0
+```
+
+### 2. Database
+
+Run `scripts/setup.sql` against your MySQL server to create the required databases and tables.
+
+### 3. Run with Docker
+
+```bash
+docker build -t nyt-games-bot .
+docker run --env-file .env nyt-games-bot
+```
+
+### 4. Run locally
+
+```bash
+pip install -r requirements.txt
+python bot.py
+```
+
+---
+
+## Channel Routing
+
+The bot uses the Discord channel name to determine which game to handle.
+
+- If a channel name contains `wordle`, `connections`, `strands`, or `pips`, commands and submissions in that channel are automatically routed to the right game.
+- If posting in a general channel, prefix commands with the game name (e.g. `?ranks wordle`).
+- Set `NYT_GAMES_CHANNEL` to post all automated messages (like monthly results) to a single shared channel.

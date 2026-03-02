@@ -141,7 +141,7 @@ class PipsCommandHandler(BaseCommandHandler):
             with io.BytesIO() as image_binary:
                 ranks_img.save(image_binary, 'PNG')
                 image_binary.seek(0)
-                await ctx.send(f"Leaderboard 🧩: {explanation_str}", \
+                await ctx.send(f"Pips Leaderboard 🧩: {explanation_str}", \
                         file=discord.File(fp=image_binary, filename='image.png'))
         else:
             await ctx.reply("Sorry, there was an issue fetching ranks. Please try again later.")
